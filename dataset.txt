@@ -1,0 +1,12 @@
+Link to dataset: https://www.kaggle.com/camnugent/genome-information-for-sequenced-organisms
+
+This is a dataset of organisms with calculated GC content for each data point. 
+Why this is significant is that this is a calculation that requires an intense amount of computing power 
+to complete, as such we can easily manipulate this data to answer many unique scientific questions. 
+
+One of them being could be answering a question like,
+"Do organisms/types of organisms that originate in significantly warmer 
+climates have a higher GC content than those that do?"
+
+We can easily use the results of these questions to use as basis for further investigative research into 
+these organisms. 
