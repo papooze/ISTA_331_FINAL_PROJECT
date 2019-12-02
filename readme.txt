@@ -1,3 +1,3 @@
 Final Project Group Members:
-Michael Burman (me)
+Michael Burman
 Ash Rau
