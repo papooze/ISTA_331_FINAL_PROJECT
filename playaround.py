@@ -50,16 +50,17 @@ def clean_bacteria_dict(bacteria_dict):
                 bacteria_dict.pop(fails[0])
 
 def main():
-    df = pd.read_csv("prokaryotes.csv")
+    df = pd.read_csv("data/prokaryotes.csv")
     df_clean_up(df)
     bacteria_dict = group_em(df)
     bacteria_dict.pop("unclassified Bacteria")
     clean_bacteria_dict(bacteria_dict)
     sum_this = 0
+    df = pd.DataFrame(bacteria_dict)
     for family in bacteria_dict.keys():
         for sub_fam in bacteria_dict[family].keys():
             sum_this += 1
-    print(sum_this)
+    df.to_csv()
 
 if __name__ == '__main__':
     main()
