@@ -1,14 +1,13 @@
-'''Filename: ETL.py
+'''
+Filename: ETL.py
 This program creates visuals in order to explore our data for the final project.\
 
 These visuals are: 
     
     A scatter plot
     A k-means clustering plot
-    ???
-    
-    data epsilon, proteobacteria
-    makes it uniform'''
+    Distortion graphs
+'''
     
 import pandas as pd, numpy as np
 import matplotlib.pyplot as plt
@@ -138,7 +137,14 @@ def k_means(gc_df, k):
     return centroidframe, labels
 
 def distortion(df, labels, centroids):  
-    '''This function measures how well clustering fits the data'''
+    '''
+    Params:
+        df = the dataframe of averages for GC content, scaffolds, and genome size
+        labels = the labels vector of genera and phula
+        centroids = the centroids vector
+    Returns:
+        results = the sum square error
+    This function measures how well clustering fits the data'''
     result = 0     
     for index in df.index:         
         label = labels[index]        
@@ -146,6 +152,14 @@ def distortion(df, labels, centroids):
     return result 
  
 def kmeans_list(df, max_k):     
+    '''
+    Params:
+        df = the dataframe of averages for GC content, scaffolds, and genome size
+        max_k = the total number of centroids
+    Returns:
+        list_of_kmeans = Literally a list of k-means
+    This function takes the dataframe and a value for max_k and returns the information on centroids
+    '''
     list_of_kmeans = []     
     for k in range(1, max_k + 1):         
         centroids, labels = k_means(df, k)         
@@ -154,13 +168,27 @@ def kmeans_list(df, max_k):
     return list_of_kmeans     
     
 def extract_distortion_dict(list_of_kmeans):     
+    '''
+    Params:
+        list_of_kmeans = list of information on the centroids
+    Returns:
+        distortion_dict = dictionary where the centroids are the keys and the distortion is the value
+
+    This function basically just takes information from the list of kmeans and turns it into a handy
+    dictionary.
+    '''
     distortion_dict = {}     
     for d in list_of_kmeans:         
         distortion_dict[d['k']] = d['distortion']     
     return distortion_dict 
 
 def make_distortion_graph(gc_df, k):
-    '''Creates distortion graph for our data for use with the k-means algorithm.'''
+    '''
+    Params:
+        gc_df = GC content dataframe
+        k = k-means number
+
+    Creates distortion graph for our data for use with the k-means algorithm.'''
     list_of_kmeans = kmeans_list(gc_df, k)
     dist_dict = extract_distortion_dict(list_of_kmeans)
     dist_ser = pd.Series(dist_dict)
@@ -171,7 +199,11 @@ def make_distortion_graph(gc_df, k):
     plt.figure()
     
 def make_centroid_graph(gc_df, k):
-    '''Creates scatter plot with centroids utilizing the k-means algorithm. Takes in a dataframe and k as an integer.'''
+    '''
+    Paramas:
+        gc_df = the GC content dataframe
+        k = number of centroids
+    Creates scatter plot with centroids utilizing the k-means algorithm. Takes in a dataframe and k as an integer.'''
     cf, labels = k_means(gc_df, k)
     gc_df = pd.concat([gc_df,pd.DataFrame(labels)], axis=1)
     gc_df = gc_df.rename(columns= {0 : "Centroid"})
@@ -180,7 +212,10 @@ def make_centroid_graph(gc_df, k):
     plt.show()
 
 def make_scatter(gc_df):
-    '''Makes two scatter plots out of the data. One has a regressor.'''
+    '''
+    Params:
+        gc_df = The GC content dataframe
+    Makes two scatter plots out of the data. One has a regressor.'''
     gc_df = gc_df.reset_index()
     plt.figure(figsize = (15, 10))
     ax = sns.scatterplot(x= 'GC Content', y= 'Genome Size', hue='Type', s=100, data= gc_df, palette= sns.husl_palette(len(gc_df)))
@@ -190,6 +225,9 @@ def make_scatter(gc_df):
     ax = sns.regplot(x= 'GC Content', y= 'Genome Size', data= gc_df, color='red')
     plt.show()
     
+'''
+It's main - it just runs through the code and then produces our graphs
+'''
 def main():
     gc_df = read_csv()
     gc_df = gc_df.groupby('Type').mean()
