@@ -11,7 +11,7 @@ These visuals are:
     makes it uniform'''
     
 import pandas as pd, numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
@@ -26,17 +26,13 @@ def read_csv():
             gc_df.loc[index, 'Organism Groups'] = 'Delta/Epsilonproteobacteria'
             continue
         gc_df.loc[index, 'Organism Groups'] = org[-1]
-    gc_df = gc_df.rename(columns= {'Organism Groups': 'Type', 'GC%' : 'GC Content', 'Size(Mb)' : 'Genome_size'})
+    gc_df = gc_df.rename(columns= {'Organism Groups': 'Type', 'GC%' : 'GC Content', 'Size(Mb)' : 'Genome Size'})
     gc_df.loc[gc_df['Type'].str.contains("unclassified"), 'Type'] = "Unclassified"
-    gc_df.loc[gc_df['Type'].str.contains("Environmental"), 'Type'] = "Unclassified"
+    gc_df.loc[gc_df['Type'].str.contains("environmental"), 'Type'] = "Unclassified"
     gc_df.loc[gc_df['Type'].str.contains("candidate phyla"), 'Type'] = "Unclassified"
     gc_df = gc_df[gc_df.Type != 'Unclassified']
     return gc_df
 
-def organize_data(gc_df):
-    '''Takes in the GC content dataframe as its only parameter, this organizes the dataframe then prepares it for visualization creation.'''
-    #gc_df = gc_df.groupby('Type').mean()
-    print(gc_df)
 
 def euclidian_distance(ser1, ser2):
     '''
@@ -155,32 +151,56 @@ def kmeans_list(df, max_k):
         centroids, labels = k_means(df, k)         
         sum_distances = distortion(df, labels, centroids)         
         list_of_kmeans.append({'centroids': centroids, 'labels': labels, 'k': k, 'distortion': sum_distances})     
-        return list_of_kmeans     
+    return list_of_kmeans     
     
 def extract_distortion_dict(list_of_kmeans):     
     distortion_dict = {}     
     for d in list_of_kmeans:         
         distortion_dict[d['k']] = d['distortion']     
-        return distortion_dict 
+    return distortion_dict 
 
-
-def main():
-    gc_df = read_csv()
-    #gc_df = organize_data(gc_df)
-    gc_df = gc_df.groupby('Type').mean()
-    print(gc_df)
-    scale(gc_df)
-    print(gc_df)
-    list_of_kmeans = kmeans_list(gc_df, 3)
-    print(list_of_kmeans)
+def make_distortion_graph(gc_df, k):
+    '''Creates distortion graph for our data for use with the k-means algorithm.'''
+    list_of_kmeans = kmeans_list(gc_df, k)
     dist_dict = extract_distortion_dict(list_of_kmeans)
     dist_ser = pd.Series(dist_dict)
-    ax = dist_ser.plot()
-    ax.set_xlabel('k', size=24)
+    plt.figure(figsize = (15, 10))
+    ax = dist_ser.plot(color = 'green')
+    ax.set_xlabel('Centroid Number', size=24)
     ax.set_ylabel('Distortion', size=24)
-   # k3 = list_of_kmeans[2] ['labels']
     plt.figure()
-    #centroidframe, labels = k_means(gc_df, 4)
+    
+def make_centroid_graph(gc_df, k):
+    '''Creates scatter plot with centroids utilizing the k-means algorithm. Takes in a dataframe and k as an integer.'''
+    cf, labels = k_means(gc_df, k)
+    gc_df = pd.concat([gc_df,pd.DataFrame(labels)], axis=1)
+    gc_df = gc_df.rename(columns= {0 : "Centroid"})
+    plt.figure(figsize= (15, 10))
+    ax = sns.scatterplot(x= 'GC Content', y= 'Genome Size', hue='Centroid', s=100, data= gc_df, palette= sns.husl_palette(k))
+    plt.show()
+
+def make_scatter(gc_df):
+    '''Makes two scatter plots out of the data. One has a regressor.'''
+    gc_df = gc_df.reset_index()
+    plt.figure(figsize = (15, 10))
+    ax = sns.scatterplot(x= 'GC Content', y= 'Genome Size', hue='Type', s=100, data= gc_df, palette= sns.husl_palette(len(gc_df)))
+    ax.legend_.remove()
+    plt.show()
+    plt.figure(figsize = (15, 10))
+    ax = sns.regplot(x= 'GC Content', y= 'Genome Size', data= gc_df, color='red')
+    plt.show()
+    
+def main():
+    gc_df = read_csv()
+    gc_df = gc_df.groupby('Type').mean()
+    scale(gc_df)
+    make_centroid_graph(gc_df, 3)
+    make_centroid_graph(gc_df, 5)
+    make_centroid_graph(gc_df, 15)
+    make_scatter(gc_df)
+    make_distortion_graph(gc_df, 20)
+
+
 
     
     
